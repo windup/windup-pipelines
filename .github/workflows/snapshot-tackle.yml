@@ -1,0 +1,46 @@
+name: Snapshots Tackle
+
+on:
+  workflow_dispatch: { }
+
+jobs:
+  tackle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup
+          path: windup
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-rulesets
+          path: windup-rulesets
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-distribution
+          path: windup-distribution
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+          cache: "maven"
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Build
+        run: |
+          mvn install -DskipTests -f windup
+          mvn install -DskipTests -f windup-rulesets
+      - name: windup
+        working-directory: windup
+        run: mvn install -DskipTests
+      - name: windup-rulesets
+        working-directory: windup-rulesets
+        run: mvn install -DskipTests
+      - name: OSSRH Snapshot
+        working-directory: windup-distribution
+        run: mvn deploy -DskipTests
+        env:
+          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
