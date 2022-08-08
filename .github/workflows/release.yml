@@ -30,8 +30,27 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-rulesets:
+  windup-rulesets-before:
     needs: [ windup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-rulesets
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${RELEASE_VERSION}<\/version.windup>/g" pom.xml
+          git add pom.xml
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Preparing for release"
+
+  windup-rulesets:
+    needs: [ windup-rulesets-before ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -46,8 +65,47 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-distribution:
+  windup-rulesets-after:
     needs: [ windup-rulesets ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-rulesets
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${NEXT_DEVELOPMENT_VERSION}<\/version.windup>/g" pom.xml
+          git add pom.xml
+        env:
+          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Back to development"
+
+  windup-distribution-before:
+    needs: [ windup-rulesets-after ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-distribution
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${RELEASE_VERSION}<\/version.windup>/g" pom.xml
+          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${RELEASE_VERSION}<\/version.windup-rulesets>/g" pom.xml
+          git add pom.xml
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Preparing for release"
+
+  windup-distribution:
+    needs: [ windup-distribution-before ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -62,8 +120,28 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-web-before:
+  windup-distribution-after:
     needs: [ windup-distribution ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-distribution
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${NEXT_DEVELOPMENT_VERSION}<\/version.windup>/g" pom.xml
+          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${NEXT_DEVELOPMENT_VERSION}<\/version.windup-rulesets>/g" pom.xml
+          git add pom.xml
+        env:
+          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Back to development"
+
+  windup-web-before:
+    needs: [ windup-distribution-after ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
