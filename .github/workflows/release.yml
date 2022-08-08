@@ -225,10 +225,11 @@ jobs:
           sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${RELEASE_VERSION}<\/version.windup.cli>/g" cli/pom.xml
           git add cli/pom.xml
           
-          sed -i -e "s/\"DOCKER_IMAGES_TAG\"/\"${RELEASE_VERSION}\"/g" templates/src/main/resources/web-template-empty-dir-executor.json
+          sudo apt-get install -y groovy          
+          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${RELEASE_VERSION}
+          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${RELEASE_VERSION}
+          
           git add templates/src/main/resources/web-template-empty-dir-executor.json
-
-          sed -i -e "s/\"DOCKER_IMAGES_TAG\"/\"${RELEASE_VERSION}\"/g" templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
           git add templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
@@ -266,10 +267,11 @@ jobs:
           sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.cli>/g" cli/pom.xml
           git add cli/pom.xml
 
-          sed -i -e "s/\"DOCKER_IMAGES_TAG\"/\"${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}\"/g" templates/src/main/resources/web-template-empty-dir-executor.json
+          sudo apt-get install -y groovy          
+          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}
+          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}
+          
           git add templates/src/main/resources/web-template-empty-dir-executor.json
-
-          sed -i -e "s/\"DOCKER_IMAGES_TAG\"/\"${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}\"/g" templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
           git add templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
         env:
           NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
