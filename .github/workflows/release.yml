@@ -309,9 +309,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.event.inputs.release_version }}-${{ github.run_id }}
+          key: ${{ runner.os }}-maven-windup-openshift-container-images-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-maven-${{ github.event.inputs.release_version }}
+            ${{ runner.os }}-maven-windup-distribution-${{ github.run_id }}
       - name: Create container images
         run: |
           mvn install -DskipTests \
