@@ -299,7 +299,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.event.inputs.release_version }}-${{ github.sha }}
+          key: ${{ runner.os }}-maven-${{ github.event.inputs.release_version }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ github.event.inputs.release_version }}
       - name: Create container images
