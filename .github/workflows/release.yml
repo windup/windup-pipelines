@@ -256,7 +256,7 @@ jobs:
       next_development_version: ${{ github.event.inputs.next_development_version }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-openshift
-      cache_key_to_restore: windup-distribution
+      cache_key_to_restore: windup-web
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -311,7 +311,7 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-windup-openshift-container-images-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-maven-windup-distribution-${{ github.run_id }}
+            ${{ runner.os }}-maven-windup-web-${{ github.run_id }}
       - name: Create container images
         run: |
           mvn install -DskipTests \
