@@ -23,6 +23,14 @@ on:
         required: false
         default: false
         type: boolean
+      cache_key:
+        description: The cache key to restore after java-setup
+        required: true
+        type: string
+      cache_key_to_restore:
+        description: The cache key to create after post java-setup
+        required: true
+        type: string
     secrets:
       GITHUB_PAT:
         required: true
@@ -64,9 +72,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ inputs.release_version }}-${{ github.run_id }}
+          key: ${{ runner.os }}-maven-${{ inputs.cache_key }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-maven-${{ inputs.release_version }}
+            ${{ runner.os }}-maven-${{ inputs.cache_key_to_restore }}-${{ github.run_id }}
       - name: Set release version ${{ inputs.release_version }}
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
