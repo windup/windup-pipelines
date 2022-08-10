@@ -361,6 +361,7 @@ jobs:
       - name: Set versions
         run: |
           sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" pom.xml
+          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${RELEASE_VERSION}<\/version.windup-rulesets>/g" pom.xml
           git add pom.xml
 
           sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" src/it/simple-it/pom.xml
@@ -484,6 +485,7 @@ jobs:
           find . -name pom.xml -exec sed -i -e "s/${RELEASE_VERSION}/${NEXT_DEVELOPMENT_VERSION}/g" {} \;
           git add -A
         env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
       - name: Commit and Push
         uses: windup/windup-pipelines/actions/commit@main
