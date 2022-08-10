@@ -1,0 +1,71 @@
+name: Release Tackle
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "The value of the version to be released"
+        required: true
+        default: "Ex: 6.0.0.Final"
+        type: string
+
+jobs:
+  tackle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CI
+        uses: actions/checkout@v3
+        with:
+          path: ci
+
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup
+          path: windup
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.release_version }}
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-rulesets
+          path: windup-rulesets
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.release_version }}
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-distribution
+          path: windup-distribution
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.release_version }}
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Build
+        run: |
+          mvn install -DskipTests -f windup
+          mvn install -DskipTests -f windup-rulesets
+          mvn install -DskipTests -f windup-distribution
+
+      - name: OSSRH Snapshot
+        working-directory: windup-distribution
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          export GPG_SCRIPT=$(readlink -f ci/scripts/gpghack.sh)
+          
+          mvn verify \
+          source:jar javadoc:jar \
+          gpg:sign install:install deploy:deploy \
+          -Dgpg.executable="$GPG_SCRIPT" \
+          -DskipTests \
+          -s $SETTINGS_XML \
+          -gs /home/runner/.m2/settings.xml
+        env:
+          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
