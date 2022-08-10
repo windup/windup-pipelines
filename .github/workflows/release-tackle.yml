@@ -48,9 +48,9 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Build
         run: |
-          mvn install -DskipTests -f windup
-          mvn install -DskipTests -f windup-rulesets
-          mvn install -DskipTests -f windup-distribution
+          mvn install -DskipTests -f windup -Ddownstream=tackle
+          mvn install -DskipTests -f windup-rulesets -Ddownstream=tackle
+          mvn install -DskipTests -f windup-distribution -Ddownstream=tackle
 
       - name: OSSRH Snapshot
         working-directory: windup-distribution
@@ -58,7 +58,7 @@ jobs:
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
           export GPG_SCRIPT=$(readlink -f ci/scripts/gpghack.sh)
           
-          mvn verify \
+          mvn verify -Ddownstream=tackle \
           source:jar javadoc:jar \
           gpg:sign install:install deploy:deploy \
           -Dgpg.executable="$GPG_SCRIPT" \
