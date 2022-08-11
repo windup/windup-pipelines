@@ -52,12 +52,11 @@ jobs:
           mvn install -DskipTests -f windup-rulesets -Ddownstream=tackle
 
       - name: OSSRH Snapshot
-        working-directory: windup-distribution
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
           export GPG_SCRIPT=$(readlink -f ci/scripts/gpghack.sh)
           
-          mvn verify \
+          cd windup-distribution && mvn verify \
           source:jar javadoc:jar \
           gpg:sign install:install deploy:deploy \
           -Dgpg.executable="$GPG_SCRIPT" \
