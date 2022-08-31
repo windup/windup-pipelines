@@ -1,0 +1,97 @@
+name: Create PR to Operator repos template
+
+on:
+  workflow_call:
+    inputs:
+      prev_release_version:
+        description: "The previous release this Operator will replace"
+        required: true
+        default: "Ex: 0.0.10"
+        type: string
+      release_version:
+        description: "The value of the version to be released"
+        required: true
+        default: "Ex: 0.0.11"
+        type: string
+      repository_origin_owner:
+        description: "The owner of the repository"
+        required: true
+        type: string
+      repository_origin_name:
+        description: "The name of the repository"
+        required: true
+        type: string
+      repository_upstream_owner:
+        description: "The owner of the repository"
+        required: true
+        type: string
+      repository_upstream_name:
+        description: "The name of the repository"
+        required: true
+        type: string
+      repository_default_branch:
+        description: "The default branch name of the repository"
+        required: true
+        type: string
+    secrets:
+      GITHUB_PAT:
+        required: true
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout windup-operator
+        uses: actions/checkout@v3
+        with:
+          repository: windup/windup-operator
+          path: windup-operator
+          ref: ${{ inputs.release_version }}
+      - name: Generate template
+        working-directory: windup-operator
+        run: |
+          export CREATED_AT=$(date '+%D')
+          for file in $(find src/main/resources/operatorhub/template)
+            envsubst '${PREV_RELEASE_VERSION} ${RELEASE_VERSION} ${CREATED_AT}' < $file
+          done
+        env:
+          PREV_RELEASE_VERSION: ${{ inputs.prev_release_version }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+
+      - name: Origin - checkout ${{ inputs.repository_origin_owner }}/${{ inputs.repository_origin_name }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository_origin_owner }}/${{ inputs.repository_origin_name }}
+          path: origin_repository
+          token: ${{ secrets.GITHUB_PAT }}
+      - name: Origin - Sync with upstream
+        working-directory: origin_repository
+        run: |
+          git remote add upstream https://github.com/${{ inputs.repository_upstream_owner }}/${{ inputs.repository_upstream_name }}.git
+          git checkout ${{ inputs.repository_default_branch }}
+          git reset --hard upstream/${{ inputs.repository_default_branch }}
+          git push origin ${{ inputs.repository_default_branch }} -f
+      - name: Origin - prepare branch for PR
+        run: |
+          mkdir -p origin_repository/operators/windup-operator
+          cp -R windup-operator/src/main/resources/operatorhub/template/ origin_repository/operators/windup-operator/${{ inputs.release_version }}/
+          
+          cd origin_repository
+          
+          git checkout -b ${{ inputs.release_version }}
+          git add operators/windup-operator/${{ inputs.release_version }}/\*
+      - name: Origin - commit & push branch for PR
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          working-directory: origin_repository
+          branch: ${{ inputs.repository_default_branch }}
+          commit_message: "Release operator ${{ inputs.release_version }}"
+      - name: Create PR in upstream
+        working-directory: origin_repository
+        run: |
+          gh pr create \
+          -H ${{ inputs.repository_origin_owner }}/${{ inputs.repository_origin_name }}:${{ inputs.release_version }} \
+          -R ${{ inputs.repository_upstream_owner }}/${{ inputs.repository_upstream_name }} \
+          -B ${{ inputs.repository_default_branch }} \
+          --title 'operator windup-operator (${{ inputs.release_version }})' \
+          --body 'Created by Github action'
