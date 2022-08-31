@@ -334,8 +334,28 @@ jobs:
           docker image push --all-tags quay.io/windupeng/windup-web-openshift-messaging-executor
           docker image push --all-tags quay.io/windupeng/windup-cli-openshift
 
-  windup-web-distribution:
+  windup-web-distribution-before:
     needs: [ windup-openshift-container-images ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-web-distribution
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${RELEASE_VERSION}<\/version.windup.web>/g" pom.xml
+          sed -i -e "s/<version.windup.openshift>.*<\/version.windup.openshift>/<version.windup.openshift>${RELEASE_VERSION}<\/version.windup.openshift>/g" pom.xml
+          git add pom.xml
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Preparing for release"
+
+  windup-web-distribution:
+    needs: [   windup-web-distribution-before ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -352,8 +372,28 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-maven-plugin-before:
+  windup-web-distribution-after:
     needs: [ windup-web-distribution ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-web-distribution
+          token: ${{ secrets.GH_PAT }}
+      - name: Set versions
+        run: |
+          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.web>/g" pom.xml
+          sed -i -e "s/<version.windup.openshift>.*<\/version.windup.openshift>/<version.windup.openshift>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.openshift>/g" pom.xml
+          git add pom.xml
+        env:
+          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          commit_message: "Back to development"
+
+  windup-maven-plugin-before:
+    needs: [ windup-web-distribution-after ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
