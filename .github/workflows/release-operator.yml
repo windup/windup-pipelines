@@ -60,7 +60,7 @@ jobs:
             -Dquarkus.container-image.group=windupeng \
             -Dquarkus.container-image.tag=$TAG \
             -Dquarkus.container-image.username=${{ secrets.QUAYIO_USERNAME }} \
-            -Dquarkus.container-image.password=${{ secrets.QUAYIO_PASSWORD } \
+            -Dquarkus.container-image.password=${{ secrets.QUAYIO_PASSWORD }} \
             -Dquarkus.container-image.push=true \
             -Dquarkus.container-image.build=true
         env:
