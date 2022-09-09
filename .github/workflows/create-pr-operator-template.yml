@@ -92,6 +92,8 @@ jobs:
           working-directory: origin_repository
           branch: ${{ inputs.release_version }}
           commit_message: "Release operator ${{ inputs.release_version }}"
+          git_user_email: windup-eng@redhat.com
+          git_user_name: windupgithubbot1
       - name: Create PR in upstream
         run: |
           export PR_BODY_FILE=$(readlink -f ci/markdown-templates/operator-pr-body.md)
