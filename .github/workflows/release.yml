@@ -415,12 +415,12 @@ jobs:
           sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
           git add ${theme}/src/test/resources/mojoTestConfig.xml
           
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${RELEASE_VERSION}<\/windupVersion>/g" ${theme}/src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add ${theme}/src/test/resources/mojoTestConfigWithWindupVersion.xml
-          
           sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${RELEASE_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
           git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
           done
+          
+          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${RELEASE_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
+          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
       - name: Commit and Push
@@ -468,12 +468,12 @@ jobs:
           sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
           git add ${theme}/src/test/resources/mojoTestConfig.xml
 
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_DEVELOPMENT_VERSION}<\/windupVersion>/g" ${theme}/src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add ${theme}/src/test/resources/mojoTestConfigWithWindupVersion.xml
-
           sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${NEXT_DEVELOPMENT_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
           git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
           done
+          
+          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_DEVELOPMENT_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
+          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
         env:
           NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
       - name: Commit and Push
