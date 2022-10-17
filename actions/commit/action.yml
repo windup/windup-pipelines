@@ -9,7 +9,7 @@ inputs:
   git_user_name:
     required: true
     description: User name to use on Git commits
-    default: Windup
+    default: windup
   commit_message:
     required: true
     description: Commit message to be used
