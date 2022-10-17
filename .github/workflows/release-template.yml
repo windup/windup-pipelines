@@ -83,7 +83,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ inputs.release_version }}
       - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
+        uses: carlosthe19916/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
           commit_message: "🏁 Releasing version ${{ inputs.release_version }}"
@@ -136,7 +136,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
+        uses: carlosthe19916/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
           commit_message: "⬆️  Next version ${{ inputs.next_development_version }}"
