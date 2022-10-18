@@ -8,7 +8,7 @@ project:
 
 release:
   github:
-    owner: carlosthe19916
+    owner: windup
     overwrite: true
     changelog:
       formatted: ALWAYS
