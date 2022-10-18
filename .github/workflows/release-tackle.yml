@@ -48,8 +48,8 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Build
         run: |
-          mvn install -DskipTests -f windup -Ddownstream=tackle
-          mvn install -DskipTests -f windup-rulesets -Ddownstream=tackle
+          mvn install -DskipTests -DskipThemeWindup -P tackle -f windup
+          mvn install -DskipTests -DskipThemeWindup -P tackle -f windup-rulesets
 
       - name: OSSRH Snapshot
         run: |
@@ -61,7 +61,7 @@ jobs:
           gpg:sign install:install deploy:deploy \
           -Dgpg.executable="$GPG_SCRIPT" \
           -DskipTests \
-          -Ddownstream=tackle \
+          -DskipThemeWindup -P tackle \
           -s $SETTINGS_XML \
           -gs /home/runner/.m2/settings.xml
         env:
