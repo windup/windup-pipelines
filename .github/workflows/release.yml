@@ -406,18 +406,21 @@ jobs:
           sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${RELEASE_VERSION}<\/version.windup-rulesets>/g" pom.xml
           git add pom.xml
 
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" src/it/simple-it/pom.xml
-          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" src/it/simple-it/pom.xml
-          git add src/it/simple-it/pom.xml
-
-          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" src/test/resources/mojoTestConfig.xml
-          git add src/test/resources/mojoTestConfig.xml
-
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${RELEASE_VERSION}<\/windupVersion>/g" src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add src/test/resources/mojoTestConfigWithWindupVersion.xml
-
-          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${RELEASE_VERSION}\");/g" src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          git add src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          for theme in windup-plugin mta-plugin mtr-plugin
+          do
+          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" ${theme}/src/it/simple-it/pom.xml
+          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" ${theme}/src/it/simple-it/pom.xml
+          git add ${theme}/src/it/simple-it/pom.xml
+          
+          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
+          git add ${theme}/src/test/resources/mojoTestConfig.xml
+          
+          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${RELEASE_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          done
+          
+          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${RELEASE_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
+          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
       - name: Commit and Push
@@ -456,18 +459,21 @@ jobs:
           sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${NEXT_DEVELOPMENT_VERSION}<\/version.windupcore>/g" pom.xml
           git add pom.xml
 
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${NEXT_DEVELOPMENT_VERSION}<\/version.windupcore>/g" src/it/simple-it/pom.xml
-          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" src/it/simple-it/pom.xml
-          git add src/it/simple-it/pom.xml
+          for theme in windup-plugin mta-plugin mtr-plugin
+          do
+          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${NEXT_DEVELOPMENT_VERSION}<\/version.windupcore>/g" ${theme}/src/it/simple-it/pom.xml
+          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" ${theme}/src/it/simple-it/pom.xml
+          git add ${theme}/src/it/simple-it/pom.xml
 
-          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" src/test/resources/mojoTestConfig.xml
-          git add src/test/resources/mojoTestConfig.xml
+          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
+          git add ${theme}/src/test/resources/mojoTestConfig.xml
 
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_DEVELOPMENT_VERSION}<\/windupVersion>/g" src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add src/test/resources/mojoTestConfigWithWindupVersion.xml
-
-          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${NEXT_DEVELOPMENT_VERSION}\");/g" src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          git add src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${NEXT_DEVELOPMENT_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
+          done
+          
+          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_DEVELOPMENT_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
+          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
         env:
           NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
       - name: Commit and Push
