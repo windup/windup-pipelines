@@ -79,15 +79,15 @@ jobs:
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
 
-  community-operators-prod:
-    needs: [ windup-operator-container-images ]
-    uses: ./.github/workflows/create-pr-operator-template.yml
-    with:
-      release_version: ${{ github.event.inputs.release_version }}
-      repository_origin_owner: windup
-      repository_origin_name: community-operators-prod
-      repository_upstream_owner: redhat-openshift-ecosystem
-      repository_upstream_name: community-operators-prod
-      repository_default_branch: main
-    secrets:
-      GITHUB_PAT: ${{ secrets.GH_PAT }}
+#  community-operators-prod:
+#    needs: [ windup-operator-container-images ]
+#    uses: ./.github/workflows/create-pr-operator-template.yml
+#    with:
+#      release_version: ${{ github.event.inputs.release_version }}
+#      repository_origin_owner: windup
+#      repository_origin_name: community-operators-prod
+#      repository_upstream_owner: redhat-openshift-ecosystem
+#      repository_upstream_name: community-operators-prod
+#      repository_default_branch: main
+#    secrets:
+#      GITHUB_PAT: ${{ secrets.GH_PAT }}
