@@ -1,0 +1,93 @@
+name: Release Operator
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "The value of the version to be released"
+        required: true
+        default: "Ex: 0.0.11"
+        type: string
+      next_development_version:
+        description: "The value of the next version to be developed"
+        required: true
+        default: "Ex: 0.0.12-SNAPSHOT"
+        type: string
+
+jobs:
+  windup-operator:
+    uses: ./.github/workflows/release-template.yml
+    with:
+      owner: windup
+      repository: windup-operator
+      release_version: ${{ github.event.inputs.release_version }}
+      next_development_version: ${{ github.event.inputs.next_development_version }}
+      jreleaser_file: jreleaser/basic.yml
+      skip_maven_release: true # We just need tag repo but not to release to maven central
+      cache_key: windup-operator
+      cache_key_to_restore: windup-operator
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+  windup-operator-container-images:
+    needs: [ windup-operator ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup-operator
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.release_version }}
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+      - name: Login to Registry
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAYIO_USERNAME }}
+          password: ${{ secrets.QUAYIO_PASSWORD }}
+      - name: Create container images
+        run: |
+          mvn clean package -Pnative -DskipTests \
+            -Dquarkus.container-image.registry=quay.io \
+            -Dquarkus.container-image.group=windupeng \
+            -Dquarkus.container-image.tag=$TAG \
+            -Dquarkus.container-image.username=${{ secrets.QUAYIO_USERNAME }} \
+            -Dquarkus.container-image.password=${{ secrets.QUAYIO_PASSWORD }} \
+            -Dquarkus.container-image.push=true \
+            -Dquarkus.container-image.build=true
+        env:
+          TAG: ${{ github.event.inputs.release_version }}
+
+  community-operators:
+    needs: [ windup-operator-container-images ]
+    uses: ./.github/workflows/create-pr-operator-template.yml
+    with:
+      release_version: ${{ github.event.inputs.release_version }}
+      repository_origin_owner: windup
+      repository_origin_name: community-operators
+      repository_upstream_owner: k8s-operatorhub
+      repository_upstream_name: community-operators
+      repository_default_branch: main
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+#  community-operators-prod:
+#    needs: [ windup-operator-container-images ]
+#    uses: ./.github/workflows/create-pr-operator-template.yml
+#    with:
+#      release_version: ${{ github.event.inputs.release_version }}
+#      repository_origin_owner: windup
+#      repository_origin_name: community-operators-prod
+#      repository_upstream_owner: redhat-openshift-ecosystem
+#      repository_upstream_name: community-operators-prod
+#      repository_default_branch: main
+#    secrets:
+#      GITHUB_PAT: ${{ secrets.GH_PAT }}
