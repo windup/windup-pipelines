@@ -41,17 +41,11 @@ jobs:
         with:
           path: ci
 
-      - name: Checkout windup-operator
-        uses: actions/checkout@v3
-        with:
-          repository: windup/windup-operator
-          path: windup-operator
-          ref: ${{ inputs.release_version }}
       - name: Generate template
-        working-directory: windup-operator
+        working-directory: ci
         run: |
           export CREATED_AT=$(date '+%D')
-          for file in $(find src/main/resources/operatorhub/template -type f)
+          for file in $(find operator/template -type f)
           do
             envsubst '${RELEASE_VERSION} ${CREATED_AT}' < $file > out.txt && mv out.txt $file
           done
@@ -82,7 +76,7 @@ jobs:
           cd ..
           
           mkdir -p origin_repository/operators/windup-operator
-          cp -R windup-operator/src/main/resources/operatorhub/template/ origin_repository/operators/windup-operator/${{ inputs.release_version }}/
+          cp -R ci/operator/template/ origin_repository/operators/windup-operator/${{ inputs.release_version }}/
           
           cd origin_repository
           git add operators/windup-operator/${{ inputs.release_version }}/\*
@@ -94,7 +88,7 @@ jobs:
           commit_message: "Release operator ${{ inputs.release_version }}"
       - name: Create PR in upstream
         run: |
-          export PR_BODY_FILE=$(readlink -f ci/markdown-templates/operator-pr-body.md)
+          export PR_BODY_FILE=$(readlink -f ci/operator/markdown-templates/operator-pr-body.md)
           
           cd origin_repository
           
