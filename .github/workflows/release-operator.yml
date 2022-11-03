@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "The value of the version to be released"
+        description: "The value of the operator version to be released"
         required: true
         default: "Ex: 0.0.11"
         type: string
@@ -12,6 +12,11 @@ on:
         description: "The value of the next version to be developed"
         required: true
         default: "Ex: 0.0.12-SNAPSHOT"
+        type: string
+      windup_base_version:
+        description: "The value of the Windup container images tag"
+        required: true
+        default: "Ex: 6.1.0.Final"
         type: string
 
 jobs:
@@ -71,6 +76,7 @@ jobs:
     uses: ./.github/workflows/create-pr-operator-template.yml
     with:
       release_version: ${{ github.event.inputs.release_version }}
+      windup_base_version: ${{ github.event.inputs.windup_base_version }}
       repository_origin_owner: windup
       repository_origin_name: community-operators
       repository_upstream_owner: k8s-operatorhub

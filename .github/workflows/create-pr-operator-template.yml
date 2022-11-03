@@ -8,6 +8,11 @@ on:
         required: true
         default: "Ex: 0.0.11"
         type: string
+      windup_base_version:
+        description: "The value of the Windup container images tag"
+        required: true
+        default: "Ex: 6.1.0.Final"
+        type: string
       repository_origin_owner:
         description: "The owner of the repository"
         required: true
@@ -47,10 +52,11 @@ jobs:
           export CREATED_AT=$(date '+%D')
           for file in $(find operator/template -type f)
           do
-            envsubst '${RELEASE_VERSION} ${CREATED_AT}' < $file > out.txt && mv out.txt $file
+            envsubst '${RELEASE_VERSION} ${WINDUP_BASE_VERSION} ${CREATED_AT}' < $file > out.txt && mv out.txt $file
           done
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
+          WINDUP_BASE_VERSION: ${{ inputs.windup_base_version }}
 
       - name: Origin - checkout ${{ inputs.repository_origin_owner }}/${{ inputs.repository_origin_name }}
         uses: actions/checkout@v3
