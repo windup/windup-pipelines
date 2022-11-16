@@ -78,6 +78,9 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Setup other tools
+        run: |
+          sudo apt-get install -y groovy
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:

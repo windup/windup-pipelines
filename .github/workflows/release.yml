@@ -121,13 +121,11 @@ jobs:
       run_before: |
         setNextVersion_windupOpenshift
         
-        apt-get install -y groovy
         groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${{ github.event.inputs.release_version }}
         groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${{ github.event.inputs.release_version }}
       run_after: |
         setNextVersion_windupOpenshift
         
-        apt-get install -y groovy
         groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json latest
         groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json latest
     secrets:
@@ -138,7 +136,7 @@ jobs:
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
   windup-openshift-container-images:
-    needs: [ windup-web ]
+    needs: [ windup-openshift ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
