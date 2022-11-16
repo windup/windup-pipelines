@@ -73,7 +73,6 @@ jobs:
       cache_key: windup-openshift
       cache_key_to_restore: windup-web
       run_before:  |
-        sudo apt-get install -y groovy        
         setNextVersion_windupOpenshift
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}

@@ -28,9 +28,6 @@ function setNextVersion_windupOpenshift() {
   sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${NEXT_VERSION}<\/version.windup.web>/g" pom.xml
   git add pom.xml
   
-  groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${NEXT_VERSION}
-  groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${NEXT_VERSION}
-  
   git add templates/src/main/resources/web-template-empty-dir-executor.json
   git add templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
 }
