@@ -13,10 +13,6 @@ on:
         required: true
         default: "Ex: 6.1.0-SNAPSHOT"
         type: string
-      branch:
-        description: "The branch to use when releasing. If not set, default branch is used"
-        required: false
-        type: string
 
 jobs:
   windup:
@@ -26,7 +22,6 @@ jobs:
       repository: windup
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup
       cache_key_to_restore: windup
@@ -45,7 +40,6 @@ jobs:
       repository: windup-rulesets
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-rulesets
       cache_key_to_restore: windup
@@ -68,7 +62,6 @@ jobs:
       repository: windup-distribution
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-distribution
       cache_key_to_restore: windup-rulesets
@@ -91,7 +84,6 @@ jobs:
       repository: windup-web
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-web
       cache_key_to_restore: windup-distribution
@@ -114,7 +106,6 @@ jobs:
       repository: windup-openshift
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-openshift
       cache_key_to_restore: windup-web
@@ -184,7 +175,6 @@ jobs:
       repository: windup-web-distribution
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-web-distribution
       cache_key_to_restore: windup-openshift
@@ -207,7 +197,6 @@ jobs:
       repository: windup-maven-plugin
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-maven-plugin
       cache_key_to_restore: windup-web-distribution
@@ -230,7 +219,6 @@ jobs:
       repository: windup-quickstarts
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: ${{ github.event.inputs.branch }}
       jreleaser_file: jreleaser/basic.yml
       skip_maven_release: true # We just need tag repo but not to release to maven central
       cache_key: windup-quickstarts-plugin

@@ -15,9 +15,6 @@ on:
       next_development_version:
         required: true
         type: string
-      branch:
-        required: false
-        type: string
       jreleaser_file:
         required: true
         type: string
@@ -67,7 +64,6 @@ jobs:
           path: repository
           fetch-depth: 0
           token: ${{ secrets.GITHUB_PAT }}
-          ref: ${{ inputs.branch }}
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
