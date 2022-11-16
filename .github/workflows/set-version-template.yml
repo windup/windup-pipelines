@@ -1,0 +1,81 @@
+name: Release Template
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      run_before:
+        required: false
+        type: string
+      cache_key:
+        description: The cache key to restore after java-setup
+        required: true
+        type: string
+      cache_key_to_restore:
+        description: The cache key to create after post java-setup
+        required: true
+        type: string
+    secrets:
+      GITHUB_PAT:
+        required: true
+
+jobs:
+  set-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CI
+        uses: actions/checkout@v3
+        with:
+          path: ci
+      - name: Checkout ${{ inputs.repository }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.owner }}/${{ inputs.repository }}
+          path: repository
+          token: ${{ secrets.GITHUB_PAT }}
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ inputs.cache_key }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ inputs.cache_key_to_restore }}-${{ github.run_id }}
+
+      - name: Run Before script
+        if: ${{ inputs.run_before }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/repository.sh
+          cd repository && eval ${{ inputs.run_before }}
+        env:
+          NEXT_VERSION: ${{ inputs.version }}
+      - name: Set version ${{ inputs.version }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/utils.sh
+          cd repository && setNextDevelopmentVersion
+        env:
+          NEXT_VERSION: ${{ inputs.version }}
+
+      - name: Maven install
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          cd repository && mvn install -DskipTests -s $SETTINGS_XML
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          working-directory: repository
+          commit_message: "⬆️  Next version ${{ inputs.version }}"
