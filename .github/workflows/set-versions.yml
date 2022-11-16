@@ -16,6 +16,8 @@ jobs:
       owner: windup
       repository: windup
       version: ${{ github.event.inputs.version }}
+      cache_key: windup
+      cache_key_to_restore: windup
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
 
@@ -26,6 +28,8 @@ jobs:
       owner: windup
       repository: windup-rulesets
       version: ${{ github.event.inputs.version }}
+      cache_key: windup-rulesets
+      cache_key_to_restore: windup
       run_before: |
         setNextVersion_windupRulesets
     secrets:
@@ -38,7 +42,9 @@ jobs:
       owner: windup
       repository: windup-distribution
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-distribution
+      cache_key_to_restore: windup-rulesets
+      run_before:  |
         setNextVersion_windupDistribution
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
@@ -50,7 +56,9 @@ jobs:
       owner: windup
       repository: windup-web
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-web
+      cache_key_to_restore: windup-distribution
+      run_before:  |
         setNextVersion_windupWeb
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
@@ -62,7 +70,9 @@ jobs:
       owner: windup
       repository: windup-openshift
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-openshift
+      cache_key_to_restore: windup-web
+      run_before:  |
         sudo apt-get install -y groovy        
         setNextVersion_windupOpenshift
     secrets:
@@ -75,7 +85,9 @@ jobs:
       owner: windup
       repository: windup-web-distribution
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-web-distribution
+      cache_key_to_restore: windup-openshift
+      run_before:  |
         setNextVersion_windupWebDistribution
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
@@ -87,7 +99,9 @@ jobs:
       owner: windup
       repository: windup-maven-plugin
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-maven-plugin
+      cache_key_to_restore: windup-web-distribution
+      run_before:  |
         setNextVersion_windupMavenPlugin
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
@@ -99,7 +113,9 @@ jobs:
       owner: windup
       repository: windup-quickstarts
       version: ${{ github.event.inputs.version }}
-      run: |
+      cache_key: windup-quickstarts-plugin
+      cache_key_to_restore: windup-maven-plugin
+      run_before:  |
         setNextVersion_windupQuickstarts
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}

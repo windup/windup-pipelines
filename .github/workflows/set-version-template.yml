@@ -15,12 +15,20 @@ on:
       run_before:
         required: false
         type: string
+      cache_key:
+        description: The cache key to restore after java-setup
+        required: true
+        type: string
+      cache_key_to_restore:
+        description: The cache key to create after post java-setup
+        required: true
+        type: string
     secrets:
       GITHUB_PAT:
         required: true
 
 jobs:
-  release:
+  set-version:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout CI
@@ -38,7 +46,13 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 11
-          cache: maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ inputs.cache_key }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ inputs.cache_key_to_restore }}-${{ github.run_id }}
 
       - name: Run Before script
         if: ${{ inputs.run_before }}
@@ -56,6 +70,10 @@ jobs:
         env:
           NEXT_VERSION: ${{ inputs.version }}
 
+      - name: Maven install
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          cd repository && mvn install -DskipTests -s $SETTINGS_XML
       - name: Commit and Push
         uses: windup/windup-pipelines/actions/commit@main
         with:
