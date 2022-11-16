@@ -1,0 +1,105 @@
+name: Set version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The value of the version to be set"
+        required: true
+        default: "Ex: 6.2.0-SNAPSHOT"
+        type: string
+
+jobs:
+  windup:
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup
+      version: ${{ github.event.inputs.version }}
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-rulesets:
+    needs: [ windup ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-rulesets
+      version: ${{ github.event.inputs.version }}
+      run_before: |
+        setNextVersion_windupRulesets
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-distribution:
+    needs: [ windup-rulesets ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-distribution
+      version: ${{ github.event.inputs.version }}
+      run: |
+        setNextVersion_windupDistribution
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-web:
+    needs: [ windup-distribution ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-web
+      version: ${{ github.event.inputs.version }}
+      run: |
+        setNextVersion_windupWeb
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-openshift:
+    needs: [ windup-web ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-openshift
+      version: ${{ github.event.inputs.version }}
+      run: |
+        sudo apt-get install -y groovy        
+        setNextVersion_windupOpenshift
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-web-distribution:
+    needs: [ windup-openshift ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-web-distribution
+      version: ${{ github.event.inputs.version }}
+      run: |
+        setNextVersion_windupWebDistribution
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-maven-plugin:
+    needs: [ windup-web-distribution ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-maven-plugin
+      version: ${{ github.event.inputs.version }}
+      run: |
+        setNextVersion_windupMavenPlugin
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+
+  windup-quickstarts:
+    needs: [ windup-maven-plugin ]
+    uses: ./.github/workflows/set-version-template.yml
+    with:
+      owner: windup
+      repository: windup-quickstarts
+      version: ${{ github.event.inputs.version }}
+      run: |
+        setNextVersion_windupQuickstarts
+    secrets:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}

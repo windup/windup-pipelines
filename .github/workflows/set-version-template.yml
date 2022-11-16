@@ -1,0 +1,63 @@
+name: Release Template
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      run_before:
+        required: false
+        type: string
+    secrets:
+      GITHUB_PAT:
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CI
+        uses: actions/checkout@v3
+        with:
+          path: ci
+      - name: Checkout ${{ inputs.repository }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.owner }}/${{ inputs.repository }}
+          path: repository
+          token: ${{ secrets.GITHUB_PAT }}
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+          cache: maven
+
+      - name: Run Before script
+        if: ${{ inputs.run_before }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/repository.sh
+          cd repository && eval ${{ inputs.run_before }}
+        env:
+          NEXT_VERSION: ${{ inputs.version }}
+      - name: Set version ${{ inputs.version }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/utils.sh
+          cd repository && setNextDevelopmentVersion
+        env:
+          NEXT_VERSION: ${{ inputs.version }}
+
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          working-directory: repository
+          commit_message: "⬆️  Next version ${{ inputs.version }}"
