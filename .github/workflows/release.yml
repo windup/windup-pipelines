@@ -32,27 +32,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-rulesets-before:
-    needs: [ windup ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-rulesets
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${RELEASE_VERSION}<\/version.windup>/g" pom.xml
-          git add pom.xml
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-rulesets:
-    needs: [ windup-rulesets-before ]
+    needs: [ windup ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -62,6 +43,10 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-rulesets
       cache_key_to_restore: windup
+      run_before: |
+        setNextVersion_windupRulesets
+      run_after: |
+        setNextVersion_windupRulesets
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -69,47 +54,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-rulesets-after:
-    needs: [ windup-rulesets ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-rulesets
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${NEXT_DEVELOPMENT_VERSION}<\/version.windup>/g" pom.xml
-          git add pom.xml
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
-  windup-distribution-before:
-    needs: [ windup-rulesets-after ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-distribution
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${RELEASE_VERSION}<\/version.windup>/g" pom.xml
-          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${RELEASE_VERSION}<\/version.windup-rulesets>/g" pom.xml
-          git add pom.xml
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-distribution:
-    needs: [ windup-distribution-before ]
+    needs: [ windup-rulesets ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -119,6 +65,10 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-distribution
       cache_key_to_restore: windup-rulesets
+      run_before: |
+        setNextVersion_windupDistribution
+      run_after: |
+        setNextVersion_windupDistribution
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -126,56 +76,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-distribution-after:
-    needs: [ windup-distribution ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-distribution
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${NEXT_DEVELOPMENT_VERSION}<\/version.windup>/g" pom.xml
-          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${NEXT_DEVELOPMENT_VERSION}<\/version.windup-rulesets>/g" pom.xml
-          git add pom.xml
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
-  windup-web-before:
-    needs: [ windup-distribution-after ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-web
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${RELEASE_VERSION}<\/version.windup>/g" pom.xml
-          sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${RELEASE_VERSION}<\/version.windup.cli>/g" pom.xml
-          git add pom.xml
-
-          sed -i -e "s/<version.windup.core>.*<\/version.windup.core>/<version.windup.core>${RELEASE_VERSION}<\/version.windup.core>/g" tsmodelsgen-invocation/pom.xml
-          sed -i -e "s/<version.windup.ruleset>.*<\/version.windup.ruleset>/<version.windup.ruleset>${RELEASE_VERSION}<\/version.windup.ruleset>/g" tsmodelsgen-invocation/pom.xml
-          git add tsmodelsgen-invocation/pom.xml
-
-          sed -i -e "s/<version.windup.core>.*<\/version.windup.core>/<version.windup.core>${RELEASE_VERSION}<\/version.windup.core>/g" tsmodelsgen-maven-plugin/pom.xml
-          sed -i -e "s/<version.windup.ruleset>.*<\/version.windup.ruleset>/<version.windup.ruleset>${RELEASE_VERSION}<\/version.windup.ruleset>/g" tsmodelsgen-maven-plugin/pom.xml
-          git add tsmodelsgen-maven-plugin/pom.xml
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-web:
-    needs: [ windup-web-before ]
+    needs: [ windup-distribution ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -185,6 +87,10 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-web
       cache_key_to_restore: windup-distribution
+      run_before: |
+        setNextVersion_windupWeb
+      run_after: |
+        setNextVersion_windupWeb
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -192,63 +98,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-web-after:
-    needs: [ windup-web ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-web
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup>.*<\/version.windup>/<version.windup>${NEXT_DEVELOPMENT_VERSION}<\/version.windup>/g" pom.xml
-          sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.cli>/g" pom.xml
-          git add pom.xml
-
-          sed -i -e "s/<version.windup.core>.*<\/version.windup.core>/<version.windup.core>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.core>/g" tsmodelsgen-invocation/pom.xml
-          sed -i -e "s/<version.windup.ruleset>.*<\/version.windup.ruleset>/<version.windup.ruleset>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.ruleset>/g" tsmodelsgen-invocation/pom.xml
-          git add tsmodelsgen-invocation/pom.xml
-
-          sed -i -e "s/<version.windup.core>.*<\/version.windup.core>/<version.windup.core>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.core>/g" tsmodelsgen-maven-plugin/pom.xml
-          sed -i -e "s/<version.windup.ruleset>.*<\/version.windup.ruleset>/<version.windup.ruleset>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.ruleset>/g" tsmodelsgen-maven-plugin/pom.xml
-          git add tsmodelsgen-maven-plugin/pom.xml
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
-  windup-openshift-before:
-    needs: [ windup-web-after ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-openshift
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${RELEASE_VERSION}<\/version.windup.cli>/g" pom.xml
-          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${RELEASE_VERSION}<\/version.windup.web>/g" pom.xml
-          git add pom.xml
-          
-          sudo apt-get install -y groovy          
-          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${RELEASE_VERSION}
-          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${RELEASE_VERSION}
-          
-          git add templates/src/main/resources/web-template-empty-dir-executor.json
-          git add templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-openshift:
-    needs: [ windup-openshift-before ]
+    needs: [ windup-web ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -258,6 +109,18 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-openshift
       cache_key_to_restore: windup-web
+      run_before: |
+        setNextVersion_windupOpenshift
+        
+        apt-get install -y groovy
+        groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${{ github.event.inputs.release_version }}
+        groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${{ github.event.inputs.release_version }}
+      run_after: |
+        setNextVersion_windupOpenshift
+        
+        apt-get install -y groovy
+        groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json latest
+        groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json latest
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -265,36 +128,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-openshift-after:
-    needs: [ windup-openshift ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-openshift
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup.cli>.*<\/version.windup.cli>/<version.windup.cli>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.cli>/g" pom.xml
-          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.web>/g" pom.xml
-          git add pom.xml
-
-          sudo apt-get install -y groovy          
-          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor.json ${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}
-          groovy ./build/change_docker_image_tag.groovy ./templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json ${NEXT_IMAGE_TAG_DEVELOPMENT_VERSION}
-          
-          git add templates/src/main/resources/web-template-empty-dir-executor.json
-          git add templates/src/main/resources/web-template-empty-dir-executor-shared-storage.json
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-          NEXT_IMAGE_TAG_DEVELOPMENT_VERSION: latest
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
   windup-openshift-container-images:
-    needs: [ windup-openshift-after ]
+    needs: [ windup-web ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -334,28 +169,8 @@ jobs:
           docker image push --all-tags quay.io/windupeng/windup-web-openshift-messaging-executor
           docker image push --all-tags quay.io/windupeng/windup-cli-openshift
 
-  windup-web-distribution-before:
-    needs: [ windup-openshift-container-images ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-web-distribution
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${RELEASE_VERSION}<\/version.windup.web>/g" pom.xml
-          sed -i -e "s/<version.windup.openshift>.*<\/version.windup.openshift>/<version.windup.openshift>${RELEASE_VERSION}<\/version.windup.openshift>/g" pom.xml
-          git add pom.xml
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-web-distribution:
-    needs: [   windup-web-distribution-before ]
+    needs: [ windup-openshift ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -365,6 +180,10 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-web-distribution
       cache_key_to_restore: windup-openshift
+      run_before: |
+        setNextVersion_windupWebDistribution
+      run_after: |
+        setNextVersion_windupWebDistribution
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -372,64 +191,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-web-distribution-after:
-    needs: [ windup-web-distribution ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-web-distribution
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windup.web>.*<\/version.windup.web>/<version.windup.web>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.web>/g" pom.xml
-          sed -i -e "s/<version.windup.openshift>.*<\/version.windup.openshift>/<version.windup.openshift>${NEXT_DEVELOPMENT_VERSION}<\/version.windup.openshift>/g" pom.xml
-          git add pom.xml
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
-  windup-maven-plugin-before:
-    needs: [ windup-web-distribution-after ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-maven-plugin
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" pom.xml
-          sed -i -e "s/<version.windup-rulesets>.*<\/version.windup-rulesets>/<version.windup-rulesets>${RELEASE_VERSION}<\/version.windup-rulesets>/g" pom.xml
-          git add pom.xml
-
-          for theme in windup-plugin mta-plugin mtr-plugin
-          do
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${RELEASE_VERSION}<\/version.windupcore>/g" ${theme}/src/it/simple-it/pom.xml
-          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" ${theme}/src/it/simple-it/pom.xml
-          git add ${theme}/src/it/simple-it/pom.xml
-          
-          sed -i -e "s/<version>.*<\/version>/<version>${RELEASE_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
-          git add ${theme}/src/test/resources/mojoTestConfig.xml
-          
-          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${RELEASE_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          done
-          
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${RELEASE_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-maven-plugin:
-    needs: [ windup-maven-plugin-before ]
+    needs: [ windup-web-distribution ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -439,6 +202,10 @@ jobs:
       jreleaser_file: jreleaser/basic.yml
       cache_key: windup-maven-plugin
       cache_key_to_restore: windup-web-distribution
+      run_before: |
+        setNextVersion_windupMavenPlugin
+      run_after: |
+        setNextVersion_windupMavenPlugin
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -446,63 +213,8 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  windup-maven-plugin-after:
-    needs: [ windup-maven-plugin ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-maven-plugin
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${NEXT_DEVELOPMENT_VERSION}<\/version.windupcore>/g" pom.xml
-          git add pom.xml
-
-          for theme in windup-plugin mta-plugin mtr-plugin
-          do
-          sed -i -e "s/<version.windupcore>.*<\/version.windupcore>/<version.windupcore>${NEXT_DEVELOPMENT_VERSION}<\/version.windupcore>/g" ${theme}/src/it/simple-it/pom.xml
-          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" ${theme}/src/it/simple-it/pom.xml
-          git add ${theme}/src/it/simple-it/pom.xml
-
-          sed -i -e "s/<version>.*<\/version>/<version>${NEXT_DEVELOPMENT_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
-          git add ${theme}/src/test/resources/mojoTestConfig.xml
-
-          sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${NEXT_DEVELOPMENT_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
-          done
-          
-          sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_DEVELOPMENT_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
-          git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
-        env:
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
-
-  windup-quickstarts-before:
-    needs: [ windup-maven-plugin-after ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-quickstarts
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          MVN_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          find . -name pom.xml -exec sed -i -e "s/${MVN_VERSION}/${RELEASE_VERSION}/g" {} \;
-          git add -A
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Preparing for release"
-
   windup-quickstarts:
-    needs: [ windup-quickstarts-before ]
+    needs: [ windup-maven-plugin ]
     uses: ./.github/workflows/release-template.yml
     with:
       owner: windup
@@ -513,29 +225,13 @@ jobs:
       skip_maven_release: true # We just need tag repo but not to release to maven central
       cache_key: windup-quickstarts-plugin
       cache_key_to_restore: windup-maven-plugin
+      run_before: |
+        setNextVersion_windupQuickstarts
+      run_after: |
+        setNextVersion_windupQuickstarts
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-  windup-quickstarts-after:
-    needs: [ windup-quickstarts ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup-quickstarts
-          token: ${{ secrets.GH_PAT }}
-      - name: Set versions
-        run: |
-          find . -name pom.xml -exec sed -i -e "s/${RELEASE_VERSION}/${NEXT_DEVELOPMENT_VERSION}/g" {} \;
-          git add -A
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-          NEXT_DEVELOPMENT_VERSION: ${{ github.event.inputs.next_development_version }}
-      - name: Commit and Push
-        uses: windup/windup-pipelines/actions/commit@main
-        with:
-          commit_message: "Back to development"
