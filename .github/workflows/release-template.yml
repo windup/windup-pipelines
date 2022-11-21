@@ -108,6 +108,7 @@ jobs:
         uses: windup/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
+          branch: ${{ inputs.branch }}
           commit_message: "🏁 Releasing version ${{ inputs.release_version }}"
       - name: Maven install
         if: ${{ inputs.skip_maven_release == true }}
@@ -169,4 +170,5 @@ jobs:
         uses: windup/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
+          branch: ${{ inputs.branch }}
           commit_message: "⬆️ Next version ${{ inputs.next_development_version }}"
