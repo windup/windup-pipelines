@@ -31,6 +31,12 @@ on:
         description: The cache key to create after post java-setup
         required: true
         type: string
+      run_before:
+        required: false
+        type: string
+      run_after:
+        required: false
+        type: string
     secrets:
       GITHUB_PAT:
         required: true
@@ -68,6 +74,9 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Setup other tools
+        run: |
+          sudo apt-get install -y groovy
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -75,6 +84,15 @@ jobs:
           key: ${{ runner.os }}-maven-${{ inputs.cache_key }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ inputs.cache_key_to_restore }}-${{ github.run_id }}
+
+      - name: Run Before script
+        if: ${{ inputs.run_before }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/repository.sh
+          cd repository && eval ${{ inputs.run_before }}
+        env:
+          NEXT_VERSION: ${{ inputs.release_version }}
       - name: Set release version ${{ inputs.release_version }}
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
@@ -135,8 +153,16 @@ jobs:
           cd repository && setNextDevelopmentVersion
         env:
           NEXT_VERSION: ${{ inputs.next_development_version }}
+      - name: Run After script
+        if: ${{ inputs.run_after }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/repository.sh
+          cd repository && eval ${{ inputs.run_after }}
+        env:
+          NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Commit and Push
         uses: windup/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
-          commit_message: "⬆️  Next version ${{ inputs.next_development_version }}"
+          commit_message: "⬆️ Next version ${{ inputs.next_development_version }}"
