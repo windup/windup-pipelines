@@ -13,6 +13,10 @@ jobs:
   windup-javadocs:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout CI
+        uses: actions/checkout@v3
+        with:
+          path: ci
       - uses: actions/checkout@v3
         with:
           repository: windup/windup
@@ -32,8 +36,11 @@ jobs:
       - name: Generate Javadocs
         working-directory: windup
         run: |
-          mvn install -DskipTests
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          
+          mvn install -DskipTests -s $SETTINGS_XML
           mvn validate \
+          -s $SETTINGS_XML \
           -PjavadocDist \
           -DskipTests \
           -Djavadoc.branding="Windup ${{ github.event.inputs.release_version }} Javadoc"
