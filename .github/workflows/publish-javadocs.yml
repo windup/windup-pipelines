@@ -21,7 +21,7 @@ jobs:
           path: windup
       - uses: actions/checkout@v3
         with:
-          repository: windup/windup.github.io.git
+          repository: windup/windup.github.io
           token: ${{ secrets.GH_PAT }}
           path: windup-website
       - name: Setup Java
