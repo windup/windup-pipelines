@@ -14,8 +14,9 @@ on:
         default: "Ex: 6.1.0-SNAPSHOT"
         type: string
       branch:
-        description: "The branch to use when releasing. If not set, default branch is used"
-        required: false
+        description: "The branch to use when releasing"
+        required: true
+        default: "master"
         type: string
 
 jobs:
@@ -245,3 +246,58 @@ jobs:
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+  windup-javadocs:
+    needs: [ windup ]
+    runs-on: ubuntu-latest
+    environment: windup-announcements
+    steps:
+      - name: Checkout CI
+        uses: actions/checkout@v3
+        with:
+          path: ci
+      - uses: actions/checkout@v3
+        with:
+          repository: windup/windup
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.release_version }}
+          path: windup
+          fetch-depth: 0
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 11
+      - name: Generate Javadocs
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          
+          cd windup
+          mvn install -DskipTests -s $SETTINGS_XML
+          mvn validate \
+          -s $SETTINGS_XML \
+          -PjavadocDist \
+          -DskipTests \
+          -Djavadoc.branding="Windup ${{ github.event.inputs.release_version }} Javadoc"
+      - name: Copy Javadocs to gh-pages
+        working-directory: windup
+        run: |
+          mv target/apidocs apidocs/
+          mvn clean
+          
+          git checkout gh-pages
+          rm docs/latest
+          
+          cd docs
+          mkdir -p ${{ github.event.inputs.release_version }}
+          ln -s ${{ github.event.inputs.release_version }}/ latest
+          cd ..
+          
+          mv apidocs/ docs/latest/javadoc/
+          git add docs
+      - name: Commit and Push
+        uses: windup/windup-pipelines/actions/commit@main
+        with:
+          working-directory: windup
+          branch: gh-pages
+          commit_message: "Add ${{ github.event.inputs.release_version }} javadoc"
