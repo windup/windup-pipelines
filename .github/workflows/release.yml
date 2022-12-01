@@ -250,7 +250,7 @@ jobs:
   windup-javadocs:
     needs: [ windup ]
     runs-on: ubuntu-latest
-    environment: windup-gh-pages
+    environment: windup-announcements
     steps:
       - name: Checkout CI
         uses: actions/checkout@v3
