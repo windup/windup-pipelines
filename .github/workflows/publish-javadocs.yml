@@ -23,6 +23,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           ref: ${{ github.event.inputs.release_version }}
           path: windup
+          fetch-depth: 0
       - name: Setup Java
         uses: actions/setup-java@v3
         with:

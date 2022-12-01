@@ -14,8 +14,9 @@ on:
         default: "Ex: 6.1.0-SNAPSHOT"
         type: string
       branch:
-        description: "The branch to use when releasing. If not set, default branch is used"
-        required: false
+        description: "The branch to use when releasing"
+        required: true
+        default: "master"
         type: string
 
 jobs:
@@ -261,6 +262,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           ref: ${{ github.event.inputs.release_version }}
           path: windup
+          fetch-depth: 0
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
