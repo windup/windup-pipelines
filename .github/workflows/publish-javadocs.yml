@@ -23,37 +23,41 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           ref: ${{ github.event.inputs.release_version }}
           path: windup
-      - uses: actions/checkout@v3
-        with:
-          repository: windup/windup.github.io
-          token: ${{ secrets.GH_PAT }}
-          path: windup-website
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: 11
       - name: Generate Javadocs
-        working-directory: windup
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
           
+          cd windup
           mvn install -DskipTests -s $SETTINGS_XML
           mvn validate \
           -s $SETTINGS_XML \
           -PjavadocDist \
           -DskipTests \
           -Djavadoc.branding="Windup ${{ github.event.inputs.release_version }} Javadoc"
-      - name: Copy Javadocs to website
+      - name: Copy Javadocs to gh-pages
+        working-directory: windup
         run: |
-          mkdir -p windup-website/static/javadocs/
-          rm -rf windup-website/static/javadocs/
-          cp -R windup/target/apidocs/ windup-website/static/javadocs/
+          mv target/apidocs apidocs/
+          mvn clean
           
-          cd windup-website && git add -A
+          git checkout gh-pages
+          rm docs/latest
+          
+          cd docs
+          mkdir -p ${{ github.event.inputs.release_version }}
+          ln -s ${{ github.event.inputs.release_version }}/ latest
+          cd ..
+          
+          mv apidocs/ docs/latest/javadoc/
+          git add docs
       - name: Commit and Push
         uses: windup/windup-pipelines/actions/commit@main
         with:
-          working-directory: windup-website
-          branch: main
-          commit_message: "⬆️ Releasing Javadocs ${{ github.event.inputs.release_version }}"
+          working-directory: windup
+          branch: gh-pages
+          commit_message: "Add ${{ github.event.inputs.release_version }} javadoc"
