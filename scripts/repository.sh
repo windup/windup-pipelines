@@ -63,5 +63,5 @@ function setNextVersion_windupMavenPlugin() {
 function setNextVersion_windupQuickstarts() {
   MVN_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
   find . -name pom.xml -exec sed -i -e "s/${MVN_VERSION}/${NEXT_VERSION}/g" {} \;
-  git add -A
+  git add \*.xml
 }
