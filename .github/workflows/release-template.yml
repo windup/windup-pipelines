@@ -151,19 +151,19 @@ jobs:
         with:
           name: ${{ inputs.repository }}-jreleaser-log
           path: "repository/jreleaser-log.tgz"
-      - name: Set next development version ${{ inputs.next_development_version }}
-        run: |
-          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
-          source ci/scripts/utils.sh
-          cd repository && setNextDevelopmentVersion
-        env:
-          NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Run After script
         if: ${{ inputs.run_after }}
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
           source ci/scripts/repository.sh
           cd repository && eval ${{ inputs.run_after }}
+        env:
+          NEXT_VERSION: ${{ inputs.next_development_version }}
+      - name: Set next development version ${{ inputs.next_development_version }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/utils.sh
+          cd repository && setNextDevelopmentVersion
         env:
           NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Commit and Push
