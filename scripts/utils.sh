@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 function setReleaseVersion() {
+    mvn clean install -DskipTests
     mvn -B versions:set versions:commit -DnewVersion="$NEXT_VERSION" -DprocessAllModules
 }
 
@@ -16,4 +17,5 @@ function release() {
 
 function setNextDevelopmentVersion() {
     mvn -B versions:set versions:commit -DnewVersion="$NEXT_VERSION" -DprocessAllModules
+    mvn clean install -DskipTests
 }
