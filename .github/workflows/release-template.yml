@@ -105,7 +105,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ inputs.release_version }}
       - name: Commit and Push
-        uses: carlosthe19916/windup-pipelines/actions/commit@main
+        uses: windup/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
           branch: ${{ inputs.branch }}
@@ -167,7 +167,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Commit and Push
-        uses: carlosthe19916/windup-pipelines/actions/commit@main
+        uses: windup/windup-pipelines/actions/commit@main
         with:
           working-directory: repository
           branch: ${{ inputs.branch }}
