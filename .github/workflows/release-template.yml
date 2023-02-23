@@ -139,6 +139,7 @@ jobs:
           working-directory: repository
           arguments: full-release
           java-opts: -Xms1024M -Xmx2048M
+          setup-java: false
         env:
           JRELEASER_PROJECT_VERSION: ${{ inputs.release_version }}
           JRELEASER_TAG_NAME: ${{ inputs.release_version }}
