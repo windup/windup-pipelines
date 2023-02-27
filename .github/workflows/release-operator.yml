@@ -27,7 +27,7 @@ jobs:
       repository: windup-operator
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
-      branch: main
+      branch: master
       jreleaser_file: jreleaser/basic.yml
       skip_maven_release: true # We just need tag repo but not to release to maven central
       cache_key: windup-operator
