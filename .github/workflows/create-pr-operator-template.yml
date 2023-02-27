@@ -3,6 +3,10 @@ name: Create PR to Operator repos template
 on:
   workflow_call:
     inputs:
+      previous_version:
+        description: "The version of the operator that the new operator will replace"
+        required: true
+        type: string
       release_version:
         description: "The value of the version to be released"
         required: true
@@ -52,9 +56,10 @@ jobs:
           export CREATED_AT=$(date '+%D')
           for file in $(find operator/template -type f)
           do
-            envsubst '${RELEASE_VERSION} ${WINDUP_BASE_VERSION} ${CREATED_AT}' < $file > out.txt && mv out.txt $file
+            envsubst '${PREVIOUS_VERSION} ${RELEASE_VERSION} ${WINDUP_BASE_VERSION} ${CREATED_AT}' < $file > out.txt && mv out.txt $file
           done
         env:
+          PREVIOUS_VERSION: ${{ inputs.previous_version }}
           RELEASE_VERSION: ${{ inputs.release_version }}
           WINDUP_BASE_VERSION: ${{ inputs.windup_base_version }}
 
