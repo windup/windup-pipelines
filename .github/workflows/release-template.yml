@@ -78,6 +78,10 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Setup other tools
         run: |
           sudo apt-get install -y groovy
@@ -135,6 +139,7 @@ jobs:
           working-directory: repository
           arguments: full-release
           java-opts: -Xms1024M -Xmx2048M
+          setup-java: false
         env:
           JRELEASER_PROJECT_VERSION: ${{ inputs.release_version }}
           JRELEASER_TAG_NAME: ${{ inputs.release_version }}
@@ -151,19 +156,19 @@ jobs:
         with:
           name: ${{ inputs.repository }}-jreleaser-log
           path: "repository/jreleaser-log.tgz"
+      - name: Set next development version ${{ inputs.next_development_version }}
+        run: |
+          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
+          source ci/scripts/utils.sh
+          cd repository && setNextDevelopmentVersion
+        env:
+          NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Run After script
         if: ${{ inputs.run_after }}
         run: |
           export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
           source ci/scripts/repository.sh
           cd repository && eval ${{ inputs.run_after }}
-        env:
-          NEXT_VERSION: ${{ inputs.next_development_version }}
-      - name: Set next development version ${{ inputs.next_development_version }}
-        run: |
-          export SETTINGS_XML=$(readlink -f ci/maven/settings.xml)
-          source ci/scripts/utils.sh
-          cd repository && setNextDevelopmentVersion
         env:
           NEXT_VERSION: ${{ inputs.next_development_version }}
       - name: Commit and Push
