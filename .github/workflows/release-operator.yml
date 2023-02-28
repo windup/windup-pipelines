@@ -3,6 +3,11 @@ name: Release Operator
 on:
   workflow_dispatch:
     inputs:
+      previous_version:
+        description: "Previous version of the Operator"
+        required: true
+        default: "Ex: 0.0.10"
+        type: string
       release_version:
         description: "The value of the operator version to be released"
         required: true
@@ -76,6 +81,7 @@ jobs:
     needs: [ windup-operator-container-images ]
     uses: ./.github/workflows/create-pr-operator-template.yml
     with:
+      previous_version: ${{ github.event.inputs.previous_version }}
       release_version: ${{ github.event.inputs.release_version }}
       windup_base_version: ${{ github.event.inputs.windup_base_version }}
       repository_origin_owner: windup
@@ -90,6 +96,7 @@ jobs:
     needs: [ windup-operator-container-images ]
     uses: ./.github/workflows/create-pr-operator-template.yml
     with:
+      previous_version: ${{ github.event.inputs.previous_version }}
       release_version: ${{ github.event.inputs.release_version }}
       windup_base_version: ${{ github.event.inputs.windup_base_version }}
       repository_origin_owner: windup
