@@ -161,25 +161,25 @@ jobs:
           key: ${{ runner.os }}-maven-windup-openshift-container-images-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-maven-windup-web-${{ github.run_id }}
-      - name: Create container images
-        run: |
-          mvn install -DskipTests \
-          -Ddocker.name.windup.web=quay.io/windupeng/windup-web-openshift:$TAG \
-          -Ddocker.name.windup.web.executor=quay.io/windupeng/windup-web-openshift-messaging-executor:$TAG \
-          -Ddocker.name.windup.cli=quay.io/windupeng/windup-cli-openshift:$TAG
-        env:
-          TAG: ${{ github.event.inputs.release_version }}
       - name: Login to Registry
         uses: docker/login-action@v2
         with:
           registry: quay.io
           username: ${{ secrets.QUAYIO_USERNAME }}
           password: ${{ secrets.QUAYIO_PASSWORD }}
+      - name: Create container images
+        run: |
+          mvn install -DskipTests \
+          -Ddocker.name.windup.web=quay.io/windupeng/windup-web-openshift:$TAG \
+          -Ddocker.name.windup.web.executor=quay.io/windupeng/windup-web-openshift-messaging-executor:$TAG \
+          -Ddocker.name.windup.cli=quay.io/windupeng/windup-cli-openshift:$TAG \
+          -Dmulti-arch -Djib.httpTimeout=0
+        env:
+          TAG: ${{ github.event.inputs.release_version }}
       - name: Push images to registry
         run: |
           docker image push --all-tags quay.io/windupeng/windup-web-openshift
           docker image push --all-tags quay.io/windupeng/windup-web-openshift-messaging-executor
-          docker image push --all-tags quay.io/windupeng/windup-cli-openshift
 
   windup-web-distribution:
     needs: [ windup-openshift ]
