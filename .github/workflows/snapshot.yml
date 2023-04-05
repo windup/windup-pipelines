@@ -146,21 +146,21 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      - name: Build container images
-        run: |
-          mvn deploy -DskipTests \
-          -Ddocker.name.windup.web.executor=quay.io/windupeng/windup-web-openshift-messaging-executor \
-          -Ddocker.name.windup.cli=quay.io/windupeng/windup-cli-openshift \
-          -Ddocker.name.windup.web=quay.io/windupeng/windup-web-openshift
       - name: Login to Registry
         uses: docker/login-action@v2
         with:
           registry: quay.io
           username: ${{ secrets.QUAYIO_USERNAME }}
           password: ${{ secrets.QUAYIO_PASSWORD }}
+      - name: Build container images
+        run: |
+          mvn deploy -DskipTests \
+          -Ddocker.name.windup.web.executor=quay.io/windupeng/windup-web-openshift-messaging-executor \
+          -Ddocker.name.windup.cli=quay.io/windupeng/windup-cli-openshift \
+          -Ddocker.name.windup.web=quay.io/windupeng/windup-web-openshift \
+          -Dmulti-arch -Djib.httpTimeout=0
       - name: Push images to Registry
         run: |
-          docker push quay.io/windupeng/windup-cli-openshift
           docker push quay.io/windupeng/windup-web-openshift-messaging-executor
           docker push quay.io/windupeng/windup-web-openshift
 
