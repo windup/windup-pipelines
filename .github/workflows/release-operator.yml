@@ -73,7 +73,8 @@ jobs:
             -Dquarkus.container-image.username=${{ secrets.QUAYIO_USERNAME }} \
             -Dquarkus.container-image.password=${{ secrets.QUAYIO_PASSWORD }} \
             -Dquarkus.container-image.push=true \
-            -Dquarkus.container-image.build=true
+            -Dquarkus.container-image.build=true \
+            -Djib.httpTimeout=0
         env:
           TAG: ${{ github.event.inputs.release_version }}
 
