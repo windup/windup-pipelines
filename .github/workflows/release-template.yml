@@ -9,6 +9,9 @@ on:
       repository:
         required: true
         type: string
+      previous_released_version:
+        required: false
+        type: string
       release_version:
         required: true
         type: string
@@ -142,8 +145,8 @@ jobs:
           setup-java: false
         env:
           JRELEASER_PROJECT_VERSION: ${{ inputs.release_version }}
+          JRELEASER_PREVIOUS_TAG_NAME: ${{ inputs.previous_released_version }}
           JRELEASER_TAG_NAME: ${{ inputs.release_version }}
-          JRELEASER_PREVIOUS_TAG_NAME: ${{ inputs.previous_version }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
           JRELEASER_PRERELEASE_PATTERN: .*(?:Alpha|alpha|Beta|beta)[0-9]
       - name: JReleaser - generate log
