@@ -3,15 +3,20 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      previous_released_version:
+        description: "The value of the previous version released. Used only to generate the Changelog"
+        required: false
+        default: "Ex: 6.2.0.Final"
+        type: string
       release_version:
         description: "The value of the version to be released"
         required: true
-        default: "Ex: 6.0.0.Final"
+        default: "Ex: 6.3.0.Final"
         type: string
       next_development_version:
         description: "The value of the next version to be developed"
         required: true
-        default: "Ex: 6.1.0-SNAPSHOT"
+        default: "Ex: 6.4.0-SNAPSHOT"
         type: string
       branch:
         description: "The branch to use when releasing"
@@ -25,6 +30,7 @@ jobs:
     with:
       owner: windup
       repository: windup
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -44,6 +50,7 @@ jobs:
     with:
       owner: windup
       repository: windup-rulesets
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -67,6 +74,7 @@ jobs:
     with:
       owner: windup
       repository: windup-distribution
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -90,6 +98,7 @@ jobs:
     with:
       owner: windup
       repository: windup-web
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -113,6 +122,7 @@ jobs:
     with:
       owner: windup
       repository: windup-openshift
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -187,6 +197,7 @@ jobs:
     with:
       owner: windup
       repository: windup-web-distribution
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -210,6 +221,7 @@ jobs:
     with:
       owner: windup
       repository: windup-maven-plugin
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
@@ -233,6 +245,7 @@ jobs:
     with:
       owner: windup
       repository: windup-quickstarts
+      previous_released_version: ${{ github.event.inputs.previous_released_version }}
       release_version: ${{ github.event.inputs.release_version }}
       next_development_version: ${{ github.event.inputs.next_development_version }}
       branch: ${{ github.event.inputs.branch }}
