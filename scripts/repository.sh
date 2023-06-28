@@ -49,21 +49,15 @@ function setNextVersion_windupMavenPlugin() {
   sed -i -e "s/<version>.*<\/version>/<version>${NEXT_VERSION}<\/version>/g" ${theme}/src/it/simple-it/pom.xml
   git add ${theme}/src/it/simple-it/pom.xml
   
+  sed -i -e "s/<version>.*<\/version>/<version>${NEXT_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
+  git add ${theme}/src/test/resources/mojoTestConfig.xml
+
   sed -i -e "s/assertEquals(mojo2.getWindupVersion(), \".*\");/assertEquals(mojo2.getWindupVersion(), \"${NEXT_VERSION}\");/g" ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
   git add ${theme}/src/test/java/org/jboss/windup/plugin/WindupMojoTest.java
   done
-  
-  for theme in mta-plugin mtr-plugin
-  do
-  sed -i -e "s/<version>.*<\/version>/<version>${NEXT_VERSION}<\/version>/g" ${theme}/src/test/resources/mojoTestConfig.xml
-  git add ${theme}/src/test/resources/mojoTestConfig.xml
-  done
-  
-  sed -i -e "s/<version>.*<\/version>/<version>${NEXT_VERSION}<\/version>/g" windup-plugin/src/test/resources/mojoTestConfig/pom.xml
-  git add windup-plugin/src/test/resources/mojoTestConfig/pom.xml
-  
-  sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion/pom.xml
-  git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion/pom.xml
+
+  sed -i -e "s/<windupVersion>.*<\/windupVersion>/<windupVersion>${NEXT_VERSION}<\/windupVersion>/g" windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
+  git add windup-plugin/src/test/resources/mojoTestConfigWithWindupVersion.xml
 }
 
 function setNextVersion_windupQuickstarts() {
