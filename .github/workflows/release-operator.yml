@@ -37,6 +37,7 @@ jobs:
       skip_maven_release: true # We just need tag repo but not to release to maven central
       cache_key: windup-operator
       cache_key_to_restore: windup-operator
+      java-version: 17
     secrets:
       GITHUB_PAT: ${{ secrets.GH_PAT }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
