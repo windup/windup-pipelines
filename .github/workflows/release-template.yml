@@ -44,7 +44,7 @@ on:
         required: false
         type: string
       java-version:
-        required: true
+        required: false
         type: string
         default: 11
     secrets:
