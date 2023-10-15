@@ -1,10 +1,11 @@
 project:
   description: Windup Migration and Modernization Tools
-  website: https://windup.github.io/
   copyright: Copyright (C) 2022 Windup
   license: EPL-1
   authors:
     - Windup Community
+  links:
+    homepage: https://windup.github.io/
 
 release:
   github:
